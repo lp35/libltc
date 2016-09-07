@@ -93,6 +93,8 @@ void ltc_decoder_write_ ## FN (LTCDecoder *d, FORMAT *buf, size_t size, ltc_off_
 LTCWRITE_TEMPLATE(float, float, 128 + (buf[copyStart+i] * 127.0))
 /* this relies on the compiler to use an arithemtic right-shift for signed values */
 LTCWRITE_TEMPLATE(s16, short, 128 + (buf[copyStart+i] >> 8))
+
+LTCWRITE_TEMPLATE(s16i, short, 128 + (((short*)buf)[(copyStart + i)*2] >> 8))
 /* this relies on the compiler to use a logical right-shift for unsigned values */
 LTCWRITE_TEMPLATE(u16, unsigned short, (buf[copyStart+i] >> 8))
 

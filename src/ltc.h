@@ -460,6 +460,17 @@ void ltc_decoder_write_float(LTCDecoder *d, float *buf, size_t size, ltc_off_t p
 void ltc_decoder_write_s16(LTCDecoder *d, short *buf, size_t size, ltc_off_t posinfo);
 
 /**
+* Wrapper around \ref ltc_decoder_write that accepts signed 16 bit
+* INTERLEAVED audio samples. Note: internally libltc uses 8 bit only.
+*
+* @param d decoder handle
+* @param buf pointer to audio sample data
+* @param size number of samples to parse
+* @param posinfo (optional, recommended) sample-offset in the audio-stream.
+*/
+void ltc_decoder_write_s16i(LTCDecoder *d, short *buf, size_t size, ltc_off_t posinfo);
+
+/**
  * Wrapper around \ref ltc_decoder_write that accepts unsigned 16 bit
  * audio samples. Note: internally libltc uses 8 bit only.
  *
