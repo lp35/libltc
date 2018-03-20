@@ -470,6 +470,8 @@ void ltc_decoder_write_s16(LTCDecoder *d, short *buf, size_t size, ltc_off_t pos
 */
 void ltc_decoder_write_s16i(LTCDecoder *d, short *buf, size_t size, ltc_off_t posinfo);
 
+void ltc_decoder_write_s24i(LTCDecoder *d, unsigned char *buf, size_t size, ltc_off_t posinfo);
+
 /**
  * Wrapper around \ref ltc_decoder_write that accepts unsigned 16 bit
  * audio samples. Note: internally libltc uses 8 bit only.
