@@ -1,21 +1,15 @@
 cmake_minimum_required (VERSION 3.0)
 
 set(PROJECT_NAME libltc)
-project (${PROJECT_NAME} LANGUAGES C)
 
-if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-  SET(ARCH_X64 ON)
-  SET(ARCH_NAME "x64")
-  message("64 bits detected.")
-else( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-  SET(ARCH_X64 OFF)
-  SET(ARCH_NAME "x86")
-  message("32 bits detected.")
-endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+project (${PROJECT_NAME} VERSION 1.3.0 LANGUAGES C)
+
+option(BUILD_SHARED_LIBS "Build as shared libraries" OFF)
+
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-set(LIBLTC_PUBLIC_HEADERS "${CMAKE_CURRENT_LIST_DIR}/src/ltc.h")
+set(LIBLTC_PUBLIC_HEADERS src/ltc.h)
   
 #For visual studio hierarchy
 set(LIBLTC_HEADERS
@@ -32,35 +26,43 @@ set(LIBLTC_SOURCES
     src/timecode.c
 )
 
-#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
+add_library(${PROJECT_NAME} ${LIBLTC_SOURCES} ${LIBLTC_HEADERS})
 
-add_library(${PROJECT_NAME}
-  ${LIBLTC_SOURCES}
-  ${LIBLTC_HEADERS}
-  )
-
-#Add header files for final installation process.
-target_sources(${PROJECT_NAME} PUBLIC ${LIBLTC_PUBLIC_HEADERS})
-
-target_include_directories(${PROJECT_NAME} PUBLIC 
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>
-  $<INSTALL_INTERFACE:include>
+target_include_directories(${PROJECT_NAME} PUBLIC  
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>  
+    $<INSTALL_INTERFACE:include/>
 )
+
+#MSVC compilation fix
+if(MSVC) #TODO: "-Dinline=__inline" for old msvc
+  target_compile_definitions(${PROJECT_NAME} PUBLIC "-D_CRT_SECURE_NO_WARNINGS")
+endif(MSVC)
 
 #Add 'd' letter at the end of the dll/lib name.
 if(NOT CMAKE_DEBUG_POSTFIX)
   set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "d")
 endif()
 
-#Install headers
-#get_target_property(LIBLTC_HEADERS ${PROJECT_NAME} INTERFACE_SOURCES)
+if(UNIX)
+  # Avoid CMake to add 'lib' prefix under Linux, as it's already included in the
+  # library name.
+  set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
+endif(UNIX)
+
+# Installation & exporting.
 install(FILES ${LIBLTC_PUBLIC_HEADERS} DESTINATION "include")
 
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Version.cmake COMPATIBILITY AnyNewerVersion)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Version.cmake DESTINATION "share/${PROJECT_NAME}")
+
 #Installation library
-install(TARGETS ${PROJECT_NAME} 
-  RUNTIME DESTINATION "${ARCH_NAME}"
-  ARCHIVE DESTINATION "${ARCH_NAME}"
-  LIBRARY DESTINATION "${ARCH_NAME}")
+install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Config
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin)
+
+install(EXPORT ${PROJECT_NAME}Config DESTINATION "share/${PROJECT_NAME}")
 
 #Install PDB files.
 #if(MSVC)
